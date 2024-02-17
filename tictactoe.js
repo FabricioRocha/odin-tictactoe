@@ -18,11 +18,13 @@ var Board = (
 
 
         function markPosition (player, row, col) {
+            // Some parameters checking
             if (player !== 'A' && player !== 'B' ) return false;
             if (row < 0 || row > 2 || !Number.isInteger(row) ) return false;
-            if (row < 0 || row > 2 || !Number.isInteger(row) ) return false;
+            if (col < 0 || col > 2 || !Number.isInteger(col) ) return false;
 
-            if (board[row][col] === 'A'|| board[row][col] === 'B') return false;
+            // Reject a mark where there is already one
+            if (board[row][col] != null) return false;
             
             board[row][col] = player;
             return true;
@@ -31,7 +33,7 @@ var Board = (
 
         function winner() {
             // Check diagonals
-            if (board[0][0] == 'A' || board[0][0] == 'B') {
+            if (board[0][0] != null || board[2][0] !=null) {
                 if (board[0][0] == board[1][1] && board[1][1] == board[2][2])
                     return board[0][0];
                 if (board[2][0] == board[1][1] && board[1][1] == board[0][2])
@@ -40,7 +42,7 @@ var Board = (
 
             // Check rows
             for (let row = 0; row <= 2; row++) {
-                if (board[row][0] == 'A' || board[row][0] == 'B') {
+                if (board[row][0] != null) {
                     if (board[row][0] == board[row][1] && board[row][1] == board[row][2])
                         return board[row][0];
                 }
@@ -48,7 +50,7 @@ var Board = (
 
             // Check columns
             for (let col = 0; col <= 2; col++) {
-                if (board[0][col] == 'A' || board[0][col] == 'B') {
+                if (board[0][col] != null) {
                     if (board[0][col] == board[1][col] && board[1][col] == board[2][col])
                         return board[0][col];
                 }
