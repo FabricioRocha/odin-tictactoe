@@ -1,0 +1,70 @@
+/*
+    The FontStruction “T-MEK” (https://fontstruct.com/fontstructions/show/1951385) by Patrick H. Lauke is licensed under a Creative Commons Attribution license (http://creativecommons.org/licenses/by/3.0/).
+*/
+@font-face {
+    font-family: "T-Mek";
+    src: url("./t-mek.ttf");
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: "Press Start";
+    src: url("./PressStart2P-vaV7.ttf");
+    font-weight: normal;
+}
+
+html {
+    overflow: hidden;
+    font-size: 10vw;
+}
+
+body {
+    background-color: black;
+    color: white;
+    height: 100vh;
+    min-height: auto;
+}
+
+#gameplay {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    height: 90vh;
+}
+
+.score {
+    font-family: t-mek;
+    font-size: 1rem;
+    align-self: start;
+    margin: 3% 3%;
+    flex: 0 1 auto;
+}
+
+.board {
+    font-size: 1rem;
+    background-color: white;
+    align-self: center;
+    flex: 1 1 auto;
+    width: 3.3em;
+    min-width: 96px;
+    min-height: 30%;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 16px 16px;
+}
+
+.board .cell {
+    background-color: black;
+    font-weight: bold;
+    text-align: center;
+    
+}
+
+footer {
+    font-family: "Press Start";
+    font-size: 0.2rem;
+    text-align: center;
+    margin-top: 16px;
+}
