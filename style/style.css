@@ -16,48 +16,48 @@
 html {
     overflow: hidden;
     font-size: 10vw;
+    --color-bg: black;
+    --color-fg: white;
 }
 
 body {
-    background-color: black;
-    color: white;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
     height: 100vh;
     min-height: auto;
 }
 
 #gameplay {
     display: flex;
-    gap: 16px;
+    gap: 0.4rem;
     justify-content: space-between;
     height: 90vh;
 }
 
 .score {
     font-family: t-mek;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
     align-self: start;
-    margin: 3% 3%;
-    flex: 0 1 auto;
+    margin: 3% auto;
+    max-width: 150px;
+    flex: 1 1 auto;
 }
 
 .board {
     font-size: 1rem;
-    background-color: white;
+    background-color: var(--color-fg);
     align-self: center;
-    flex: 1 1 auto;
-    width: 3.3em;
-    min-width: 96px;
-    min-height: 30%;
-
+    flex: 0 1 0;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 16px 16px;
+    gap: 14px 14px;
 }
 
 .board .cell {
-    background-color: black;
-    font-weight: bold;
+    background-color: var(--color-bg);
+    font-weight:900;
     text-align: center;
     
 }
@@ -66,5 +66,5 @@ footer {
     font-family: "Press Start";
     font-size: 0.2rem;
     text-align: center;
-    margin-top: 16px;
+    margin-top: 0.2rem;
 }
