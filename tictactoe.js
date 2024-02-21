@@ -2,6 +2,7 @@
 var Board = (
     function () {
         let board = [];
+        let marked = 0;
 
         function getBoard() {
             return board;
@@ -14,6 +15,8 @@ var Board = (
                     board[i][j] = null;
                 }
             }
+            let marked = 0;
+            return;
         }
 
 
@@ -27,11 +30,13 @@ var Board = (
             if (board[row][col] != null) return false;
             
             board[row][col] = player;
+            marked++;
             return true;
         }
 
 
         function winner() {
+            
             // Check diagonals
             if (board[0][0] != null || board[2][0] !=null) {
                 if (board[0][0] == board[1][1] && board[1][1] == board[2][2])
@@ -56,10 +61,81 @@ var Board = (
                 }
             }
 
-            // Got that far? No winner
+            // All positions taken and no winner? We have a tie
+            if (marked == 9) return 'D';
+
+            // Got that far? No winner, no draw
             return null;
         }
 
         return {init, getBoard, markPosition, winner};
+    }
+)();
+
+
+/*
+    What's missing
+
+    Gameplay:
+        - Player turn control
+            - Who starts
+
+
+        - Score control
+            - Limit for game over (match win)
+        
+        - Computer as player B
+
+        - Game start
+    
+    Idle mode (color cycling)
+
+*/
+
+var Game = (
+    function (Board) {
+        const GAME_SETS = 10;
+        let currentSet = 0;
+        let score = {'A': 0, 'B': 0};
+        let humanPlayerB = false;
+        let turnPlayer = 'A';
+        
+        function playerTossCoin () {
+            let turnPlayer = (Math.random() < 0.5) ? 'A' : 'B';
+            return;
+        }
+
+        function getTurnPlayer() {
+            return turnPlayer;
+        }
+
+        function playerSwitch () {
+            let turnPlayer = (turnPlayer == 'A')? 'B' : 'A';
+            if (humanPlayerB == false) computerPlay();
+            return;
+        }
+
+        function checkResults () {
+            let setWinner = Board.winner();
+            if (typeof setWinner !== "null") {
+                if (setWinner !== 'D') {
+                    score[setWinner]++;
+                    scoreUpdate(setWinner, score[setWinner]);
+                    Board.init();
+                    BoardView_Reset();
+                }
+                
+                currentSet++;
+                if (currentSet + 1 == GAME_SETS) finish();
+
+                return;
+            }
+        }
+
+        function finish () {
+
+        }
+
+        return {playerSwitch, getTurnPlayer, checkResults};
     }
 )();

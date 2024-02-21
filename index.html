@@ -10,7 +10,7 @@
 <body>
     <div id="gameplay">
         <section class="score" id="score-A">0</section>
-        <section class="board">
+        <section id="board">
             <div class="cell" data-row="0" data-col="0">◯</div>
             <div class="cell" data-row="0" data-col="1"></div>
             <div class="cell" data-row="0" data-col="2">╳</div>
@@ -26,10 +26,11 @@
     <footer>PRESS SPC TO PLAY</footer>
 
     <script>
-        function scoreIncrease (player) {
+        var ScreenCycle = "";
+        
+        function scoreUpdate (player, value) {
             let score = document.getElementById(`score-${player}`);
-            let scoreVal = (1 * score.innerText) + 1;
-            score.innerText = scoreVal;
+            score.innerText = value;
         }
 
 
@@ -67,14 +68,42 @@
         }
 
         function cellClick (evt) {
-            let cell = evt.target;  
+            let cell = evt.target;
+            let buzz = new Audio('../style/no.mp3');
+            let player = Game.getTurnPlayer();
+            let valid = Board.markPosition(player, cell.dataset.row, cell.dataset.col);
+            if (valid == false) {
+                buzz.play();
+            } else {
+                // mark cell according to current player
+                if (player == 'A') cell.innerText = '╳';
+                    else cell.innerText = '◯';
+                
+                // check result
+                    // set winner?
+                        // match winner?
+                    // no winner?
+                        // just switch player turn
+            }
         }
 
+        function BoardView_Reset () {
+            let board = document.getElementById("board");
+            let cells = board.children;
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].innerText = "";
+            }
+            return;
+
+        }
         
-        function playerMove (player, row, col) {
-            
-                let valid = Board.markPosition(player, row, col)
-            
+        function Screen_CycleStart () {
+            colorsSet();
+            ScreenCycle = setInterval(colorsSet, 4000);
+        }
+
+        function Screen_CycleStop () {
+            clearInterval(ScreenCycle);
         }
 
         

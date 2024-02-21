@@ -44,7 +44,7 @@ body {
     flex: 1 1 auto;
 }
 
-.board {
+#board {
     font-size: 1rem;
     background-color: var(--color-fg);
     align-self: center;
@@ -55,11 +55,12 @@ body {
     gap: 14px 14px;
 }
 
-.board .cell {
+#board .cell {
     background-color: var(--color-bg);
     font-weight:900;
     text-align: center;
-    
+    min-width: 1.1em;
+    min-height: 1.1em;
 }
 
 footer {
