@@ -95,14 +95,17 @@ var Board = (
 var Game = (
     function (Board) {
         const GAME_SETS = 10;
-        let currentSet = 0;
+        let roundNo = 0;
         let score = {'A': 0, 'B': 0};
         let humanPlayerB = false;
         let turnPlayer = 'A';
         
-        function playerTossCoin () {
-            let turnPlayer = (Math.random() < 0.5) ? 'A' : 'B';
-            return;
+        function start () {
+            roundNo = 0;
+            score.A = 0;
+            score.B = 0;
+            turnPlayer = (Math.random() < 0.5) ? 'A' : 'B';
+            Screen_StartDisable();
         }
 
         function getTurnPlayer() {
@@ -116,26 +119,33 @@ var Game = (
         }
 
         function checkResults () {
-            let setWinner = Board.winner();
-            if (typeof setWinner !== "null") {
-                if (setWinner !== 'D') {
-                    score[setWinner]++;
-                    scoreUpdate(setWinner, score[setWinner]);
+            let roundWinner = Board.winner();
+            if (typeof roundWinner !== "null") {
+                if (roundWinner !== 'D') {
+                    score[roundWinner]++;
+                    scoreUpdate(roundWinner, score[roundWinner]);
                     Board.init();
                     BoardView_Reset();
                 }
                 
-                currentSet++;
-                if (currentSet + 1 == GAME_SETS) finish();
-
+                roundNo++;
+                if (roundNo == GAME_SETS) Screen_Idle();
+                
+                playerSwitch();
                 return;
             }
         }
 
-        function finish () {
-
+        function computerPlay() {
+            setTimeout (
+                () => {
+                    let tgt = Math.floor(Math.random() * 9);
+                    let cells = Document.getElementById("board").children;
+                    cells[tgt].click();
+                }
+            , 1000);
         }
 
-        return {playerSwitch, getTurnPlayer, checkResults};
+        return {playerSwitch, getTurnPlayer, checkResults, start};
     }
 )();

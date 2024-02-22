@@ -7,7 +7,7 @@
     <script src="tictactoe.js"></script>
     <title>Tic, tac, toe</title>
 </head>
-<body>
+<body onload="Screen_Idle()">
     <div id="gameplay">
         <section class="score" id="score-A">0</section>
         <section id="board">
@@ -72,18 +72,21 @@
             let buzz = new Audio('../style/no.mp3');
             let player = Game.getTurnPlayer();
             let valid = Board.markPosition(player, cell.dataset.row, cell.dataset.col);
+
             if (valid == false) {
                 buzz.play();
+                return;
             } else {
                 // mark cell according to current player
                 if (player == 'A') cell.innerText = '╳';
                     else cell.innerText = '◯';
                 
-                // check result
-                    // set winner?
-                        // match winner?
-                    // no winner?
-                        // just switch player turn
+                Game.checkResults();
+
+                // no winner? just update the visual cue of turn player
+                let score = document.getElementById(`score-${player}`);
+                score.style.textDecoration = "underline";
+                return;
             }
         }
 
@@ -104,6 +107,27 @@
 
         function Screen_CycleStop () {
             clearInterval(ScreenCycle);
+        }
+
+        function pressSpace (evt) {
+            if (evt.key == " ") {
+                Screen_CycleStop();
+                colorsSet(0);
+                document.querySelector("footer").innerText = "";
+                BoardView_Reset();
+                Game.start();
+            }
+        }
+
+        function Screen_Idle () {
+            Screen_CycleStart();
+            let footer = document.querySelector("footer");
+            footer.innerText = "PRESS SPC TO PLAY";
+            window.addEventListener("keydown", pressSpace);
+        }
+
+        function Screen_StartDisable() {
+            window.removeEventListener("keydown", pressSpace);
         }
 
         
