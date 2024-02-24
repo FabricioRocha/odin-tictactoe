@@ -138,6 +138,7 @@ var Game = (
                     return "GAME";
                 } else {
                     BoardMod.init();
+                    playerSwitch();
                     return "ROUND";
                 }
             }
