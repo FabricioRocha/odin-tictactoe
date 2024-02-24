@@ -15,7 +15,7 @@ var Board = (
                     board[i][j] = null;
                 }
             }
-            let marked = 0;
+            marked = 0;
             return;
         }
 
@@ -93,7 +93,7 @@ var Board = (
 */
 
 var Game = (
-    function (Board) {
+    function (BoardMod) {
         const GAME_SETS = 10;
         let roundNo = 0;
         let score = {'A': 0, 'B': 0};
@@ -106,6 +106,16 @@ var Game = (
             score.B = 0;
             turnPlayer = (Math.random() < 0.5) ? 'A' : 'B';
             Screen_StartDisable();
+            BoardMod.init();
+            
+        }
+
+        function getScore() {
+            return score;
+        }
+
+        function getHumanPlayerB () {
+            return humanPlayerB;
         }
 
         function getTurnPlayer() {
@@ -113,39 +123,31 @@ var Game = (
         }
 
         function playerSwitch () {
-            let turnPlayer = (turnPlayer == 'A')? 'B' : 'A';
-            if (humanPlayerB == false) computerPlay();
+            if (turnPlayer == 'A') turnPlayer = 'B'
+                else turnPlayer = 'A';
             return;
         }
 
         function checkResults () {
-            let roundWinner = Board.winner();
-            if (typeof roundWinner !== "null") {
-                if (roundWinner !== 'D') {
-                    score[roundWinner]++;
-                    scoreUpdate(roundWinner, score[roundWinner]);
-                    Board.init();
-                    BoardView_Reset();
-                }
-                
+            let roundWinner = BoardMod.winner();
+            
+            if (roundWinner !== null) {
+                if (roundWinner == 'A' | roundWinner == 'B') score[roundWinner]++;
                 roundNo++;
-                if (roundNo == GAME_SETS) Screen_Idle();
-                
-                playerSwitch();
-                return;
-            }
-        }
-
-        function computerPlay() {
-            setTimeout (
-                () => {
-                    let tgt = Math.floor(Math.random() * 9);
-                    let cells = Document.getElementById("board").children;
-                    cells[tgt].click();
+                if (roundNo == GAME_SETS) {
+                    return "GAME";
+                } else {
+                    BoardMod.init();
+                    return "ROUND";
                 }
-            , 1000);
-        }
+            }
 
-        return {playerSwitch, getTurnPlayer, checkResults, start};
+            playerSwitch();
+            return null;
+            
+        }    
+
+
+        return {playerSwitch, getTurnPlayer, getHumanPlayerB, getScore, checkResults, start};
     }
-)();
+)(Board);

@@ -28,9 +28,15 @@
     <script>
         var ScreenCycle = "";
         
-        function scoreUpdate (player, value) {
-            let score = document.getElementById(`score-${player}`);
-            score.innerText = value;
+        function scoreUpdate () {
+            let gscore = Game.getScore();
+            for (player in gscore) {
+                let score = document.getElementById(`score-${player}`);
+                score.innerText = gscore[player];
+                if (Game.getTurnPlayer() == player) score.style.textDecoration = "underline"
+                    else score.style.textDecoration = "none";
+            }
+            
         }
 
 
@@ -67,27 +73,63 @@
             return;
         }
 
+        function BoardView_cellMark (player, cell) {
+            if (player == 'A') cell.innerText = '╳';
+                else cell.innerText = '◯';
+            
+            GameStateCheck();
+        }
+
+        function GameStateCheck () {
+            let status = Game.checkResults();
+
+            if (status == 'GAME') {
+               Screen_Idle();
+            } else if (status == 'ROUND') {
+                BoardView_Reset();
+            }
+            
+            // no winner:
+            scoreUpdate();
+            if (Game.getHumanPlayerB() == false && Game.getTurnPlayer() == 'B')
+                BoardView_computerPlay();
+            
+            return;
+        }
+
+        function BoardView_computerPlay() {
+            setTimeout (
+                () => {
+                    let valid = false;
+                    let tgt = 0, row = 0, col = 0;
+                    do {
+                        tgt = Math.floor(Math.random() * 9);
+                        row = Math.floor(tgt / 3);
+                        col = tgt % 3;
+                        valid = Board.markPosition("B", row, col);
+                    } while (valid == false);
+
+                    let cells = document.getElementById("board").children;
+                    BoardView_cellMark("B", cells[tgt]);
+                }
+            , 1000);
+        }
+
         function cellClick (evt) {
-            let cell = evt.target;
-            let buzz = new Audio('../style/no.mp3');
+            let buzz = new Audio('./style/no.mp3');
             let player = Game.getTurnPlayer();
-            let valid = Board.markPosition(player, cell.dataset.row, cell.dataset.col);
+            let cell = evt.target;
+            let row = parseInt(cell.dataset.row);
+            let col = parseInt(cell.dataset.col)
+            
+            let valid = Board.markPosition(player, row, col);
 
             if (valid == false) {
                 buzz.play();
-                return;
             } else {
-                // mark cell according to current player
-                if (player == 'A') cell.innerText = '╳';
-                    else cell.innerText = '◯';
-                
-                Game.checkResults();
-
-                // no winner? just update the visual cue of turn player
-                let score = document.getElementById(`score-${player}`);
-                score.style.textDecoration = "underline";
-                return;
+                BoardView_cellMark(player, cell);
             }
+            return;
         }
 
         function BoardView_Reset () {
@@ -95,11 +137,14 @@
             let cells = board.children;
             for (let i = 0; i < cells.length; i++) {
                 cells[i].innerText = "";
+                cells[i].addEventListener("click", cellClick);
             }
             return;
 
         }
         
+        
+
         function Screen_CycleStart () {
             colorsSet();
             ScreenCycle = setInterval(colorsSet, 4000);
@@ -116,6 +161,10 @@
                 document.querySelector("footer").innerText = "";
                 BoardView_Reset();
                 Game.start();
+                scoreUpdate();
+                if (Game.getHumanPlayerB() == false && Game.getTurnPlayer() == 'B') {
+                    BoardView_computerPlay();
+                }
             }
         }
 
