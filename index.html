@@ -98,6 +98,7 @@
         }
 
         function BoardView_computerPlay() {
+            document.body.style.pointerEvents = "none";
             setTimeout (
                 () => {
                     let valid = false;
@@ -111,6 +112,8 @@
 
                     let cells = document.getElementById("board").children;
                     BoardView_cellMark("B", cells[tgt]);
+                    document.body.style.pointerEvents = "auto";
+                    return;
                 }
             , 1000);
         }
