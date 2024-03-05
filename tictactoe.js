@@ -73,24 +73,7 @@ var Board = (
 )();
 
 
-/*
-    What's missing
 
-    Gameplay:
-        - Player turn control
-            - Who starts
-
-
-        - Score control
-            - Limit for game over (match win)
-        
-        - Computer as player B
-
-        - Game start
-    
-    Idle mode (color cycling)
-
-*/
 
 var Game = (
     function (BoardMod) {
