@@ -7,7 +7,7 @@
     <script src="tictactoe.js"></script>
     <title>Tic, tac, toe</title>
 </head>
-<body onload="Screen_Idle()">
+<body onload="Console.over()">
     <div id="gameplay">
         <section class="score" id="score-A">0</section>
         <section id="board">
@@ -26,163 +26,255 @@
     <footer>PRESS SPC TO PLAY</footer>
 
     <script>
-        var ScreenCycle = "";
         
-        function scoreUpdate () {
-            let gscore = Game.getScore();
-            for (player in gscore) {
-                let score = document.getElementById(`score-${player}`);
-                score.innerText = gscore[player];
-                if (Game.getTurnPlayer() == player) score.style.textDecoration = "underline"
-                    else score.style.textDecoration = "none";
-            }
-            
-        }
+        var Console = (function(gamecart) {
 
+            var ScreenCycleInterval = "";
+            var ColorMode = true;
+            var isIdle = true;
 
-        function scoreReset () {
-            let players = ['A', 'B'];
-            players.forEach(
-                (player) => {
-                    let score = document.getElementById(`score-${player}`);
-                    score.innerText = '0';
-                }
-            );
-        }
+            function start() {
+                isIdle = false;
 
-        function colorsSet (bw) {
-            let doc = document.documentElement;
-            let fg = "white", bg = "black";
-            if (bw !== 0) {
-                let colors = [
-                    "black", "blue", "white", "yellow",
-                    "goldenrod", "red", "green", "maroon",
-                    "magenta", "orange", "lime", "purple",
-                    "gray", "olivedrab", "pink", "cyan"];
-                let fgi = Math.floor(Math.random() * 16);
-                let bgi = Math.floor(Math.random() * 16);
-                if (fgi == bgi) {
-                    colorsSet();
-                    return;
-                }
-                fg = colors[fgi];
-                bg = colors[bgi];
-            } 
-            doc.style.setProperty("--color-bg", bg);
-            doc.style.setProperty("--color-fg", fg);
-            return;
-        }
+                // Stop the color cycling screen
+                clearInterval(ScreenCycle);
+                colorsSet(ColorMode);
 
-        function BoardView_cellMark (player, cell) {
-            if (player == 'A') cell.innerText = '╳';
-                else cell.innerText = '◯';
-            
-            GameStateCheck();
-        }
-
-        function GameStateCheck () {
-            let status = Game.checkResults();
-
-            if (status == 'GAME') {
-               Screen_Idle();
-            } else if (status == 'ROUND') {
-                BoardView_Reset();
-            }
-            
-            // no winner:
-            scoreUpdate();
-            if (Game.getHumanPlayerB() == false && Game.getTurnPlayer() == 'B')
-                BoardView_computerPlay();
-            
-            return;
-        }
-
-        function BoardView_computerPlay() {
-            document.body.style.pointerEvents = "none";
-            setTimeout (
-                () => {
-                    let valid = false;
-                    let tgt = 0, row = 0, col = 0;
-                    do {
-                        tgt = Math.floor(Math.random() * 9);
-                        row = Math.floor(tgt / 3);
-                        col = tgt % 3;
-                        valid = Board.markPosition("B", row, col);
-                    } while (valid == false);
-
-                    let cells = document.getElementById("board").children;
-                    BoardView_cellMark("B", cells[tgt]);
-                    document.body.style.pointerEvents = "auto";
-                    return;
-                }
-            , 1000);
-        }
-
-        function cellClick (evt) {
-            let buzz = new Audio('./style/no.mp3');
-            let player = Game.getTurnPlayer();
-            let cell = evt.target;
-            let row = parseInt(cell.dataset.row);
-            let col = parseInt(cell.dataset.col)
-            
-            let valid = Board.markPosition(player, row, col);
-
-            if (valid == false) {
-                buzz.play();
-            } else {
-                BoardView_cellMark(player, cell);
-            }
-            return;
-        }
-
-        function BoardView_Reset () {
-            let board = document.getElementById("board");
-            let cells = board.children;
-            for (let i = 0; i < cells.length; i++) {
-                cells[i].innerText = "";
-                cells[i].addEventListener("click", cellClick);
-            }
-            return;
-
-        }
-        
-        
-
-        function Screen_CycleStart () {
-            colorsSet();
-            ScreenCycle = setInterval(colorsSet, 4000);
-        }
-
-        function Screen_CycleStop () {
-            clearInterval(ScreenCycle);
-        }
-
-        function pressSpace (evt) {
-            if (evt.key == " ") {
-                Screen_CycleStop();
-                colorsSet(0);
+                // Remove the "PRESS SPC TO START" message
                 document.querySelector("footer").innerText = "";
-                BoardView_Reset();
-                Game.start();
+
+                // Initialize the game backend
+                gamecart.start();
+
+                // Clear score and board
                 scoreUpdate();
-                if (Game.getHumanPlayerB() == false && Game.getTurnPlayer() == 'B') {
-                    BoardView_computerPlay();
+                BoardView_Reset();
+
+                // Get the first player
+                if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
+                    computerMove();
+                } else {
+                    playEnable();
                 }
             }
-        }
 
-        function Screen_Idle () {
-            Screen_CycleStart();
-            let footer = document.querySelector("footer");
-            footer.innerText = "PRESS SPC TO PLAY";
-            window.addEventListener("keydown", pressSpace);
-        }
+            function over() {
+                // Enter idle mode; disable board input; enable console input
+                isIdle = true;
+                colorsSet(true);
+                ScreenCycle = setInterval(() => colorsSet(true), 4000);
 
-        function Screen_StartDisable() {
-            window.removeEventListener("keydown", pressSpace);
-        }
+                let footer = document.querySelector("footer");
+                footer.innerText = "PRESS SPC TO PLAY";
 
-        
+                playDisable();
+                consoleEnable();
+                
+            }
+
+            function computerMove() {
+                playDisable();
+                    setTimeout( () => {
+                        gamecart.computerPlays();
+                        updateFromState();
+                        playEnable();
+                    }, 1200);
+            }
+
+            function updateFromState () {
+                BoardView_Reset(gamecart.getBoard());
+                
+                let status = gamecart.checkResults();
+
+                if (status == 'GAME') {
+                    over();
+                } else if (status == 'ROUND') {
+                    BoardView_Reset();
+                }
+                
+                // no winner: update score, prepare for next move
+                scoreUpdate();
+                
+                if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
+                    computerMove();
+                }
+                
+                return;
+            }
+
+            /*
+                playEnable() / playDisable()
+
+                    Allow or block user cliks on the board. Disabling is needed while the
+                    computer is playing and when the game is in idle (over) mode.
+            */
+            function playDisable() {
+                document.body.style.pointerEvents = "none";
+            }
+
+            function playEnable() {
+                document.body.style.pointerEvents = "auto";     
+            }
+
+            /*
+                Board view related functions
+            */
+
+            function BoardView_cellClick (evt) {
+                let buzz = new Audio('./style/no.mp3');
+                let player = gamecart.getTurnPlayer();
+                let cell = evt.target;
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col)
+                
+                let valid = gamecart.humanPlays(row, col);
+
+                if (valid == false) {
+                    buzz.play();
+                } else {
+                    updateFromState();
+                }
+                return;
+            }
+
+            /*
+                BoardView_Reset()
+
+                    Either clears the board view or draws it with the data of an
+                    optionally passed array of 9 elements containing "A", "B" or null.
+            */
+            function BoardView_Reset (boardArray = []) {
+                let board = document.getElementById("board");
+                let cells = board.children;
+                
+                for (let i = 0; i < cells.length; i++) {
+                    if (boardArray.length) {
+                        let irow = Math.floor(i / 3);
+                        let icol = i % 3;
+                        if (boardArray[irow][icol] == 'A') cells[i].innerText = "╳";
+                        if (boardArray[irow][icol] == 'B') cells[i].innerText = "◯";
+                    } else {
+                        cells[i].innerText = "";
+                    }
+                    
+                    cells[i].addEventListener("click", BoardView_cellClick);
+                }
+                
+                return;
+            }
+
+
+            /*
+                Console-related functions
+                
+                    Functions related to "console controls" like game start, color mode,
+                    number of players, etc. Some controls should not be functional during
+                    a match.
+
+                    TO DO: Support for mobile (no keyboard)
+            */
+            function consoleEnable() {
+                window.addEventListener("keydown", consoleControlHandle); 
+                // TODO: must add event handler for mobile inputs
+            }
+
+            function consoleControlHandle (evt) {
+                switch (evt.key) {
+                    case ' ':
+                        if (isIdle == true) start();
+                        break;
+                    case 'F1':
+                        colorSwitchHandle();
+                        break;
+                    case 'F2': 
+                        if (isIdle == true) playerSwitchHandle();
+                        break;
+                }
+                
+                return;
+            }
+
+            function colorSwitchHandle() {
+                if (ColorMode == true) {
+                    clearInterval(ScreenCycle);
+                    ColorMode = false;
+                    colorsSet(false);
+                } else {
+                    ColorMode = true;
+                    colorsSet(true);
+                }
+
+                colorsSet(ColorMode);
+            }
+
+            function playerSwitchHandle() {
+                if (isIdle == true) {
+                    gamecart.humanPlayerBToggle();
+                    let isHumanPlayerB = gamecart.getHumanPlayerB();
+                    let msg = "";
+                    if(isHumanPlayerB == true) {
+                        msg = "TWO PLAYERS";
+                    } else {
+                        msg = "ONE PLAYER";
+                    }
+                    
+                    let prevmsg = document.getElementsByTagName("footer")[0].innerText;
+                    document.getElementsByTagName("footer")[0].innerText = msg;
+                    setTimeout(
+                        () => {
+                            document.getElementsByTagName("footer")[0].innerText = prevmsg;
+                        }
+                    ,1000);
+                }
+
+                return;
+            }
+
+            function colorsSet (colormode) {
+                let doc = document.documentElement;
+                let fg = "white", bg = "black";
+                if (colormode === true) {
+                    let colors = [
+                        "black", "blue", "white", "yellow",
+                        "goldenrod", "red", "green", "maroon",
+                        "magenta", "orange", "lime", "purple",
+                        "gray", "olivedrab", "pink", "cyan"];
+                    let fgi = Math.floor(Math.random() * 16);
+                    let bgi = Math.floor(Math.random() * 16);
+                    if (fgi == bgi) {
+                        colorsSet();
+                        return;
+                    }
+                    fg = colors[fgi];
+                    bg = colors[bgi];
+                } 
+                doc.style.setProperty("--color-bg", bg);
+                doc.style.setProperty("--color-fg", fg);
+                return;
+            }
+
+            /*
+                Score view functions
+            */
+
+            function scoreUpdate () {
+                let gscore = gamecart.getScore();
+                for (player in gscore) {
+                    let score = document.getElementById(`score-${player}`);
+                    score.innerText = gscore[player];
+                    if (gamecart.getTurnPlayer() == player) score.style.textDecoration = "underline"
+                        else score.style.textDecoration = "none";
+                }
+                
+            }
+
+            
+
+            
+            return {over};
+
+        }) (Game);
+
     </script>
 </body>
 </html>

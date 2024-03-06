@@ -34,7 +34,6 @@ var Board = (
             return true;
         }
 
-
         function winner() {
             
             // Check diagonals
@@ -73,24 +72,7 @@ var Board = (
 )();
 
 
-/*
-    What's missing
 
-    Gameplay:
-        - Player turn control
-            - Who starts
-
-
-        - Score control
-            - Limit for game over (match win)
-        
-        - Computer as player B
-
-        - Game start
-    
-    Idle mode (color cycling)
-
-*/
 
 var Game = (
     function (BoardMod) {
@@ -105,7 +87,6 @@ var Game = (
             score.A = 0;
             score.B = 0;
             turnPlayer = (Math.random() < 0.5) ? 'A' : 'B';
-            Screen_StartDisable();
             BoardMod.init();
             
         }
@@ -118,8 +99,17 @@ var Game = (
             return humanPlayerB;
         }
 
+        function humanPlayerBToggle() {
+            humanPlayerB = !humanPlayerB;
+        }
+
         function getTurnPlayer() {
             return turnPlayer;
+        }
+
+
+        function getBoard() {
+            return BoardMod.getBoard();
         }
 
         function playerSwitch () {
@@ -127,6 +117,25 @@ var Game = (
                 else turnPlayer = 'A';
             return;
         }
+
+        function computerPlays () {
+            let valid = false;
+            let tgt = 0, row = 0, col = 0;
+            
+            do {
+                tgt = Math.floor(Math.random() * 9);
+                row = Math.floor(tgt / 3);
+                col = tgt % 3;
+                valid = BoardMod.markPosition("B", row, col);
+            } while (valid == false);
+
+            return;
+        }
+
+        function humanPlays (row, col) {
+            return BoardMod.markPosition(turnPlayer, row, col);
+        }
+
 
         function checkResults () {
             let roundWinner = BoardMod.winner();
@@ -149,6 +158,6 @@ var Game = (
         }    
 
 
-        return {playerSwitch, getTurnPlayer, getHumanPlayerB, getScore, checkResults, start};
+        return {playerSwitch, getTurnPlayer, getBoard, getHumanPlayerB, humanPlayerBToggle, getScore, computerPlays, humanPlays, checkResults, start};
     }
 )(Board);
