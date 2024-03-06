@@ -7,7 +7,7 @@
     <script src="tictactoe.js"></script>
     <title>Tic, tac, toe</title>
 </head>
-<body onload="Screen_Idle()">
+<body onload="Console.over()">
     <div id="gameplay">
         <section class="score" id="score-A">0</section>
         <section id="board">
@@ -27,30 +27,6 @@
 
     <script>
         
-        /*
-            Game control:
-                Round counting
-                Players scores
-                Preferences storage and access
-            
-            Board module (the game itself)
-                Computer player (should be here)
-
-            Console:
-                Board view?
-                    Board clicks
-                Game view
-                    Scores
-                    Idle/Playing control
-                
-                Player turn control (enable/disable board input)
-                
-                Color/BW handling
-
-            
-            User settings
-
-        */
         var Console = (function(gamecart) {
 
             var ScreenCycleInterval = "";
@@ -75,28 +51,31 @@
                 gamecart.start();
 
                 // Get the first player
-                
-                
-                
-                
-                
-                
                 if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
-                    // BoardView_computerPlay();
+                    playDisable();
+                    gamecart.computerPlays();
+                    updateFromState();
+                } else {
+                    playEnable();
                 }
             }
 
             function over() {
                 // Enter idle mode; disable board input; enable console input
-                colorsSet();
-                ScreenCycle = setInterval(colorsSet, 4000);
+                colorsSet(true);
+                ScreenCycle = setInterval(() => colorsSet(true), 4000);
 
                 let footer = document.querySelector("footer");
                 footer.innerText = "PRESS SPC TO PLAY";
+
+                playDisable();
+                consoleEnable();
                 
             }
 
             function updateFromState () {
+                BoardView_Reset(gamecart.getBoard());
+                
                 let status = gamecart.checkResults();
 
                 if (status == 'GAME') {
@@ -107,8 +86,15 @@
                 
                 // no winner: update score, prepare for next move
                 scoreUpdate();
-                if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B')
-                    BoardView_computerPlay();
+                
+                if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
+                    playDisable();
+                    setTimeout( () => {
+                        gamecart.computerPlays();
+                        updateFromState();
+                        playEnable();
+                    }, 1200);
+                }
                 
                 return;
             }
@@ -128,6 +114,54 @@
             }
 
             /*
+                Board view related functions
+            */
+
+            function BoardView_cellClick (evt) {
+                let buzz = new Audio('./style/no.mp3');
+                let player = gamecart.getTurnPlayer();
+                let cell = evt.target;
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col)
+                
+                let valid = gamecart.humanPlays(row, col);
+
+                if (valid == false) {
+                    buzz.play();
+                } else {
+                    updateFromState();
+                }
+                return;
+            }
+
+            /*
+                BoardView_Reset()
+
+                    Either clears the board view or draws it with the data of an
+                    optionally passed array of 9 elements containing "A", "B" or null.
+            */
+            function BoardView_Reset (boardArray = []) {
+                let board = document.getElementById("board");
+                let cells = board.children;
+                
+                for (let i = 0; i < cells.length; i++) {
+                    if (boardArray.length) {
+                        let irow = Math.floor(i / 3);
+                        let icol = i % 3;
+                        if (boardArray[irow][icol] == 'A') cells[i].innerText = "╳";
+                        if (boardArray[irow][icol] == 'B') cells[i].innerText = "◯";
+                    } else {
+                        cells[i].innerText = "";
+                    }
+                    
+                    cells[i].addEventListener("click", BoardView_cellClick);
+                }
+                
+                return;
+            }
+
+
+            /*
                 Console-related functions
                 
                     Functions related to "console controls" like game start, color mode,
@@ -137,24 +171,23 @@
                     TO DO: Support for mobile (no keyboard)
             */
             function consoleEnable() {
-                window.addEventListener("keydown", pressSpace); // must change to allow other keys
+                window.addEventListener("keydown", consoleControlHandle); 
+                // TODO: must add event handler for mobile inputs
             }
 
             function consoleDisable() {
-                window.removeEventListener("keydown", pressSpace);
+                window.removeEventListener("keydown", consoleControlHandle);
             }
 
             function consoleControlHandle (evt) {
                 if (evt.key == " ") {
-                    
+                    start();
                 }
             }
 
             function colorSwitchHandle() {
-
+                ColorMode = !ColorMode;
             }
-
-            
 
             function colorsSet (colormode) {
                 let doc = document.documentElement;
@@ -184,11 +217,11 @@
             */
 
             function scoreUpdate () {
-                let gscore = Game.getScore();
+                let gscore = gamecart.getScore();
                 for (player in gscore) {
                     let score = document.getElementById(`score-${player}`);
                     score.innerText = gscore[player];
-                    if (Game.getTurnPlayer() == player) score.style.textDecoration = "underline"
+                    if (gamecart.getTurnPlayer() == player) score.style.textDecoration = "underline"
                         else score.style.textDecoration = "none";
                 }
                 
@@ -204,54 +237,11 @@
                 );
             }
 
-        })(Game);
-
-
-        
-        
-
-        
-
-        function BoardView_cellMark (player, cell) {
-            if (player == 'A') cell.innerText = '╳';
-                else cell.innerText = '◯';
             
-            GameStateCheck();
-        }
+            return {over};
 
-        
+        }) (Game);
 
-        function BoardView_computerPlay() {
-            
-            setTimeout (
-                () => {
-                    let valid = false;
-                    let tgt = 0, row = 0, col = 0;
-                    do {
-                        tgt = Math.floor(Math.random() * 9);
-                        row = Math.floor(tgt / 3);
-                        col = tgt % 3;
-                        valid = Board.markPosition("B", row, col);
-                    } while (valid == false);
-
-                    let cells = document.getElementById("board").children;
-                    BoardView_cellMark("B", cells[tgt]);
-                    return;
-                }
-            , 1000);
-        }
-
-        
-        
-        
-
-        
-
-        
-
-        
-
-        
     </script>
 </body>
 </html>
