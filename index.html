@@ -179,6 +179,7 @@
             }
 
             function consoleControlHandle (evt) {
+                evt.preventDefault();
                 switch (evt.key) {
                     case ' ':
                         if (isIdle == true) start();
