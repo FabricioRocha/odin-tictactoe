@@ -43,18 +43,16 @@
                 // Remove the "PRESS SPC TO START" message
                 document.querySelector("footer").innerText = "";
 
+                // Initialize the game backend
+                gamecart.start();
+
                 // Clear score and board
                 scoreUpdate();
                 BoardView_Reset();
 
-                // Initialize the game backend
-                gamecart.start();
-
                 // Get the first player
                 if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
-                    playDisable();
-                    gamecart.computerPlays();
-                    updateFromState();
+                    computerMove();
                 } else {
                     playEnable();
                 }
@@ -73,6 +71,15 @@
                 
             }
 
+            function computerMove() {
+                playDisable();
+                    setTimeout( () => {
+                        gamecart.computerPlays();
+                        updateFromState();
+                        playEnable();
+                    }, 1200);
+            }
+
             function updateFromState () {
                 BoardView_Reset(gamecart.getBoard());
                 
@@ -88,12 +95,7 @@
                 scoreUpdate();
                 
                 if (gamecart.getHumanPlayerB() == false && gamecart.getTurnPlayer() == 'B') {
-                    playDisable();
-                    setTimeout( () => {
-                        gamecart.computerPlays();
-                        updateFromState();
-                        playEnable();
-                    }, 1200);
+                    computerMove();
                 }
                 
                 return;
@@ -227,15 +229,7 @@
                 
             }
 
-            function scoreReset () {
-                let players = ['A', 'B'];
-                players.forEach(
-                    (player) => {
-                        let score = document.getElementById(`score-${player}`);
-                        score.innerText = '0';
-                    }
-                );
-            }
+            
 
             
             return {over};
