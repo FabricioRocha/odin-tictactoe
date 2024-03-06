@@ -99,9 +99,14 @@ var Game = (
             return humanPlayerB;
         }
 
+        function humanPlayerBToggle() {
+            humanPlayerB = !humanPlayerB;
+        }
+
         function getTurnPlayer() {
             return turnPlayer;
         }
+
 
         function getBoard() {
             return BoardMod.getBoard();
@@ -153,6 +158,6 @@ var Game = (
         }    
 
 
-        return {playerSwitch, getTurnPlayer, getBoard, getHumanPlayerB, getScore, computerPlays, humanPlays, checkResults, start};
+        return {playerSwitch, getTurnPlayer, getBoard, getHumanPlayerB, humanPlayerBToggle, getScore, computerPlays, humanPlays, checkResults, start};
     }
 )(Board);

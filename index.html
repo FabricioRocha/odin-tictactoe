@@ -31,10 +31,10 @@
 
             var ScreenCycleInterval = "";
             var ColorMode = true;
+            var isIdle = true;
 
             function start() {
-                // Disable console controls
-                consoleDisable();
+                isIdle = false;
 
                 // Stop the color cycling screen
                 clearInterval(ScreenCycle);
@@ -60,6 +60,7 @@
 
             function over() {
                 // Enter idle mode; disable board input; enable console input
+                isIdle = true;
                 colorsSet(true);
                 ScreenCycle = setInterval(() => colorsSet(true), 4000);
 
@@ -177,18 +178,56 @@
                 // TODO: must add event handler for mobile inputs
             }
 
-            function consoleDisable() {
-                window.removeEventListener("keydown", consoleControlHandle);
-            }
-
             function consoleControlHandle (evt) {
-                if (evt.key == " ") {
-                    start();
+                switch (evt.key) {
+                    case ' ':
+                        if (isIdle == true) start();
+                        break;
+                    case 'F1':
+                        colorSwitchHandle();
+                        break;
+                    case 'F2': 
+                        if (isIdle == true) playerSwitchHandle();
+                        break;
                 }
+                
+                return;
             }
 
             function colorSwitchHandle() {
-                ColorMode = !ColorMode;
+                if (ColorMode == true) {
+                    clearInterval(ScreenCycle);
+                    ColorMode = false;
+                    colorsSet(false);
+                } else {
+                    ColorMode = true;
+                    colorsSet(true);
+                }
+
+                colorsSet(ColorMode);
+            }
+
+            function playerSwitchHandle() {
+                if (isIdle == true) {
+                    gamecart.humanPlayerBToggle();
+                    let isHumanPlayerB = gamecart.getHumanPlayerB();
+                    let msg = "";
+                    if(isHumanPlayerB == true) {
+                        msg = "TWO PLAYERS";
+                    } else {
+                        msg = "ONE PLAYER";
+                    }
+                    
+                    let prevmsg = document.getElementsByTagName("footer")[0].innerText;
+                    document.getElementsByTagName("footer")[0].innerText = msg;
+                    setTimeout(
+                        () => {
+                            document.getElementsByTagName("footer")[0].innerText = prevmsg;
+                        }
+                    ,1000);
+                }
+
+                return;
             }
 
             function colorsSet (colormode) {
